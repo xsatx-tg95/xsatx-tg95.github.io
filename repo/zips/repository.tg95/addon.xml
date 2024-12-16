@@ -10,7 +10,7 @@
     <extension point="xbmc.addon.metadata">
         <summary>xsatx-tg95 Repository</summary>
         <description>My Personal Repository</description>
-        <disclaimer></disclaimer>
+        <disclaimer>Non mi assumo nessuna responsabilita su usi inpropri.</disclaimer>
         <platform>all</platform>
         <assets>
             <icon>icon.png</icon>
