@@ -6,11 +6,17 @@
             <checksum>https://raw.githubusercontent.com/xsatx-tg95/xsatx-tg95.github.io/master/repo/zips/addons.xml.md5</checksum>
             <datadir zip="true">https://raw.githubusercontent.com/xsatx-tg95/xsatx-tg95.github.io/master/repo/zips/</datadir>
         </dir>
+		<dir>
+			<info compressed="false">https://WorldLiveTV.github.io/repo/addons.xml</info>
+			<checksum>https://WorldLiveTV.github.io/repo/addons.xml.md5</checksum>
+			<datadir zip="true">https://WorldLiveTV.github.io/repo/</datadir>
+			<hashes>true</hashes>
+		</dir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>xsatx-tg95 Repository</summary>
         <description>My Personal Repository</description>
-        <disclaimer />
+        <disclaimer>xsatx-tg95 is not it responsible for the use that the user makes of the addon itself.</disclaimer>
         <platform>all</platform>
         <assets>
             <icon>icon.png</icon>
