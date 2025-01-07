@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<addons><addon id="repository.tg95" name="xsatx-tg95 Repository" version="1.0" provider-name="xsatx-tg95">
-    <extension point="xbmc.addon.repository" name="repository.tg95">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.tg95" name="xsatx-tg95 Repository" version="1.0" provider-name="xsatx-tg95">
+    <extension point="xbmc.addon.repository" name="Example Repository">
         <dir>
             <info compressed="false">https://raw.githubusercontent.com/xsatx-tg95/xsatx-tg95.github.io/master/repo/zips/addons.xml</info>
             <checksum>https://raw.githubusercontent.com/xsatx-tg95/xsatx-tg95.github.io/master/repo/zips/addons.xml.md5</checksum>
@@ -10,11 +10,11 @@
     <extension point="xbmc.addon.metadata">
         <summary>xsatx-tg95 Repository</summary>
         <description>My Personal Repository</description>
-        <disclaimer>xsatx-tg95 is not it responsible for the use that the user makes of the addon itself.</disclaimer>
+        <disclaimer></disclaimer>
         <platform>all</platform>
         <assets>
             <icon>icon.png</icon>
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
-</addon></addons>
+</addon>
