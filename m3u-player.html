@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M3U Player By TG@95 v01.2026</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #101826;
+      --panel-2: #172235;
+      --panel-3: #1e2c44;
+      --text: #eef4ff;
+      --muted: #97a6bf;
+      --accent: #22c55e;
+      --accent-2: #16a34a;
+      --border: rgba(255,255,255,.09);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top right, #1d3354 0, var(--bg) 35%), var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 340px;
+      background: linear-gradient(180deg, rgba(16,24,38,.98), rgba(9,14,25,.98));
+      border-right: 1px solid var(--border);
+      padding: 18px;
+      overflow-y: auto;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #60a5fa);
+      box-shadow: var(--shadow);
+    }
+    .brand h1 { margin: 0; font-size: 20px; line-height: 1.1; }
+    .brand small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .loader-box {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--panel-2), #132033);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .loader-box label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .loader-box input[type="file"], .search-box input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px 14px;
+      outline: none;
+    }
+    .loader-box input[type="file"]::file-selector-button {
+      margin-right: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #072610;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .helper {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .search-box { margin-bottom: 14px; }
+    .search-box input:focus, .loader-box input:focus {
+      border-color: rgba(34,197,94,.6);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+    }
+    .url-loader {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .url-loader input { min-width: 0; }
+    .url-loader button {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #1f314e, #16253b);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .url-loader button:hover {
+      background: linear-gradient(180deg, #284062, #1a2d48);
+    }
+    .count { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+    .stream-list { display: flex; flex-direction: column; gap: 8px; }
+    .stream-btn {
+      width: 100%; border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel-2), #132033);
+      color: var(--text); border-radius: 14px; padding: 11px 12px;
+      text-align: left; display: flex; gap: 12px; align-items: center;
+      cursor: pointer; transition: .18s ease;
+    }
+    .stream-btn:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #223252, #17263e);
+      border-color: rgba(255,255,255,.16);
+    }
+    .stream-btn.active {
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      color: #072610; border-color: transparent; font-weight: 800;
+    }
+    .stream-num {
+      width: 54px; min-width: 54px; height: 44px; border-radius: 12px;
+      display: grid; place-items: center; font-weight: 900; color: white;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .stream-meta { min-width: 0; flex: 1; }
+    .stream-name { font-size: 14px; font-weight: 700; display: block; }
+    .stream-url {
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .url-loader { grid-template-columns: 1fr; }
+      .url-loader button { width: 100%; }
+    }
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 18px 22px; border-bottom: 1px solid var(--border);
+      background: rgba(8,12,22,.68); backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 5;
+    }
+    .title-wrap h2 { margin: 0; font-size: 22px; }
+    .title-wrap p { margin: 6px 0 0; font-size: 13px; color: var(--muted); word-break: break-all; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button.action {
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      padding: 10px 14px; border-radius: 12px; cursor: pointer; transition: .18s ease;
+    }
+    button.action:hover { background: var(--panel-3); }
+    .content {
+      padding: 20px; display: grid; grid-template-columns: 1fr; gap: 18px; flex: 1;
+    }
+    .player-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(23,34,53,.92), rgba(11,18,32,.92));
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px;
+      display: flex; flex-direction: column; min-height: 68vh;
+    }
+    .player-shell {
+      position: relative; flex: 1; border-radius: 14px; overflow: hidden;
+      background: #000; border: 1px solid rgba(255,255,255,.08);
+    }
+    video { width: 100%; height: 100%; min-height: 62vh; border: 0; background: #000; }
+    .status {
+      margin-top: 14px; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: rgba(255,255,255,.04); color: var(--muted);
+      font-size: 13px; line-height: 1.5;
+    }
+    .dropzone {
+      margin-top: 10px; padding: 14px; border: 1px dashed rgba(255,255,255,.16);
+      border-radius: 12px; text-align: center; color: var(--muted); font-size: 12px;
+    }
+    .dropzone.dragover {
+      border-color: rgba(34,197,94,.7);
+      background: rgba(34,197,94,.08);
+      color: #bbf7d0;
+    }
+    code { background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 6px; }
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%; height: auto; max-height: 380px; position: static;
+        border-right: 0; border-bottom: 1px solid var(--border);
+      }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .actions { width: 100%; }
+      .actions .action { flex: 1; }
+      video { min-height: 52vh; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <h5>M3U Player By TG@95 v01.2026</h5>
+        <small>Importa playlist da M3U, TXT, CSV o JSON</small>
+      </div>
+    </div>
+
+    <div class="loader-box">
+      <label for="fileInput">Carica file locale</label>
+      <input id="fileInput" type="file" accept=".txt,.csv,.json,.m3u,.m3u8,.tsv" />
+      <label for="urlInput">Carica playlist da URL</label>
+      <div class="url-loader">
+        <input id="urlInput" type="url" placeholder="https://esempio.com/lista.m3u" inputmode="url" />
+        <button id="loadUrlBtn" type="button">Carica URL</button>
+      </div>
+      <div class="helper">Supporta playlist <code>M3U</code> standard con righe <code>#EXTINF</code> + URL, oltre a <code>TXT</code>, <code>CSV</code> e <code>JSON</code>. Il caricamento da URL prova prima in modo diretto e poi usa fallback proxy se il server remoto blocca il CORS.</div>
+      <div id="dropzone" class="dropzone">Oppure trascina qui il file locale</div>
+    </div>
+
+    <div class="search-box">
+      <input id="searchInput" type="text" placeholder="Cerca per numero o nome..." aria-label="Cerca stream" />
+    </div>
+
+    <p id="countLabel" class="count">0 voci caricate</p>
+    <div id="streamList" class="stream-list"></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title-wrap">
+        <h2 id="currentTitle">Nessun file caricato</h2>
+        <p id="currentUrl">Seleziona un file locale per popolare il menu.</p>
+      </div>
+      <div class="actions">
+        <button class="action" id="openCurrent" type="button">Apri URL</button>
+        <button class="action" id="resetPlayer" type="button">Svuota</button>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="player-card">
+        <div class="player-shell">
+          <video id="player" controls playsinline preload="metadata"></video>
+        </div>
+        <div id="statusBox" class="status">Carica un file locale con tutte le voci. Le playlist M3U standard vengono lette dal player e il menu viene generato automaticamente.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const searchInput = document.getElementById('searchInput');
+    const countLabel = document.getElementById('countLabel');
+    const streamList = document.getElementById('streamList');
+    const player = document.getElementById('player');
+    const currentTitle = document.getElementById('currentTitle');
+    const currentUrl = document.getElementById('currentUrl');
+    const statusBox = document.getElementById('statusBox');
+    const openCurrent = document.getElementById('openCurrent');
+    const resetPlayer = document.getElementById('resetPlayer');
+
+    let streams = [];
+    let filteredStreams = [];
+    let currentIndex = -1;
+    let hlsInstance = null;
+
+    function destroyHls() {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+    }
+
+    function readFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          loadEntriesFromText(String(reader.result || ''), file.name);
+        } catch (error) {
+          statusBox.textContent = 'Errore durante la lettura del file: ' + error.message;
+        }
+      };
+      reader.onerror = () => {
+        statusBox.textContent = 'Impossibile leggere il file selezionato.';
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function parseTxt(text) {
+      const rows = text.split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+      const items = [];
+      for (const row of rows) {
+        if (row.includes('|')) {
+          const [id, name, url] = row.split('|').map(v => v.trim());
+          if (id && name && url) items.push({ id, name, url });
+          continue;
+        }
+        const match = row.match(/^(\d+)\s*[-;|,]\s*(.+?)\s*[-;|,]\s*(https?:\/\/\S+)$/i);
+        if (match) items.push({ id: match[1], name: match[2], url: match[3] });
+      }
+      return items;
+    }
+
+    function parseCsv(text) {
+      const rows = text.split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+      const items = [];
+      for (const row of rows) {
+        const cols = row.split(/[;,\t]/).map(v => v.trim().replace(/^"|"$/g, ''));
+        if (cols.length < 3) continue;
+        const [id, name, url] = cols;
+        if (/^id$/i.test(id) && /^name$/i.test(name)) continue;
+        if (id && name && url) items.push({ id, name, url });
+      }
+      return items;
+    }
+
+    function parseJson(text) {
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error('Il JSON deve contenere un array di oggetti.');
+      return data.map(item => ({
+        id: String(item.id ?? item.number ?? '').trim(),
+        name: String(item.name ?? item.title ?? '').trim(),
+        url: String(item.url ?? item.link ?? '').trim()
+      })).filter(item => item.id && item.name && item.url);
+    }
+
+    function extractExtInfName(line) {
+      const commaIndex = line.indexOf(',');
+      if (commaIndex >= 0) {
+        return line.slice(commaIndex + 1).trim();
+      }
+      return line.replace(/^#EXTINF[^ ]*/i, '').trim() || 'Voce playlist';
+    }
+
+    function parseM3u(text) {
+      const rows = text.split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+      const items = [];
+      let pendingName = '';
+      let autoId = 1;
+
+      for (const row of rows) {
+        if (row.startsWith('#EXTINF')) {
+          pendingName = extractExtInfName(row);
+          continue;
+        }
+        if (row.startsWith('#')) continue;
+        if (!/^https?:\/\//i.test(row)) continue;
+
+        const item = {
+          id: String(autoId).padStart(3, '0'),
+          name: pendingName || `Voce ${autoId}`,
+          url: row
+        };
+        items.push(item);
+        pendingName = '';
+        autoId += 1;
+      }
+
+      return items;
+    }
+
+    function colorAt(index) {
+      const colors = [
+        'linear-gradient(135deg, #ef4444, #f97316)',
+        'linear-gradient(135deg, #f59e0b, #eab308)',
+        'linear-gradient(135deg, #22c55e, #14b8a6)',
+        'linear-gradient(135deg, #06b6d4, #3b82f6)',
+        'linear-gradient(135deg, #6366f1, #8b5cf6)',
+        'linear-gradient(135deg, #ec4899, #f43f5e)'
+      ];
+      return colors[index % colors.length];
+    }
+
+    function loadEntriesFromText(text, fileName = '') {
+      const ext = (fileName.split('.').pop() || '').toLowerCase();
+      let items = [];
+
+      if (ext === 'json') items = parseJson(text);
+      else if (ext === 'csv' || ext === 'tsv') items = parseCsv(text);
+      else if (ext === 'm3u' || ext === 'm3u8') items = parseM3u(text);
+      else {
+        items = parseTxt(text);
+        if (!items.length && text.includes('#EXTINF')) items = parseM3u(text);
+      }
+
+      if (!items.length) {
+        throw new Error('Nessuna voce valida trovata nel file selezionato.');
+      }
+
+      streams = items.map((item, idx) => ({
+        id: String(item.id),
+        name: item.name,
+        url: item.url,
+        color: colorAt(idx)
+      }));
+      filteredStreams = [...streams];
+      renderMenu(filteredStreams);
+      loadStream(0);
+      statusBox.textContent = `File caricato: ${fileName || 'locale'} · voci importate: ${streams.length}`;
+    }
+
+    async function fetchTextWithFallback(cleanUrl) {
+      const attempts = [
+        {
+          label: 'diretto',
+          url: cleanUrl,
+          options: {}
+        },
+        {
+          label: 'proxy isomorphic-git',
+          url: `https://cors.isomorphic-git.org/${cleanUrl}`,
+          options: {}
+        },
+        {
+          label: 'proxy AllOrigins',
+          url: `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`,
+          options: {}
+        }
+      ];
+
+      let lastError = null;
+
+      for (const attempt of attempts) {
+        try {
+          const response = await fetch(attempt.url, attempt.options);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          if (!text.trim()) throw new Error('risposta vuota');
+          return { text, via: attempt.label };
+        } catch (error) {
+          lastError = `${attempt.label}: ${error.message}`;
+        }
+      }
+
+      throw new Error(lastError || 'caricamento non riuscito');
+    }
+
+    async function readUrl(sourceUrl) {
+      const cleanUrl = String(sourceUrl || '').trim();
+      if (!cleanUrl) {
+        statusBox.textContent = 'Inserisci un URL valido per caricare la playlist.';
+        return;
+      }
+
+      try {
+        new URL(cleanUrl);
+      } catch {
+        statusBox.textContent = "L'URL inserito non è valido.";
+        return;
+      }
+
+      statusBox.textContent = 'Caricamento playlist da URL in corso...';
+
+      try {
+        const result = await fetchTextWithFallback(cleanUrl);
+        const fileName = cleanUrl.split('/').pop()?.split('?')[0] || cleanUrl;
+        loadEntriesFromText(result.text, fileName);
+        statusBox.textContent = `Playlist caricata da URL (${result.via}) · voci importate: ${streams.length}`;
+      } catch (error) {
+        statusBox.textContent = `Impossibile caricare l'URL: ${error.message}.`;
+      }
+    }
+
+    function renderMenu(list) {
+      streamList.innerHTML = '';
+      countLabel.textContent = `${list.length} voci visibili`;
+      list.forEach((stream) => {
+        const btn = document.createElement('button');
+        btn.className = 'stream-btn';
+        btn.type = 'button';
+        btn.dataset.id = stream.id;
+        btn.innerHTML = `
+          <span class="stream-num" style="background:${stream.color}">${stream.id}</span>
+          <span class="stream-meta">
+            <span class="stream-name">${stream.name}</span>
+          </span>
+        `;
+        btn.addEventListener('click', async () => {
+          const index = streams.findIndex(s => s.id === stream.id && s.url === stream.url);
+          await loadStream(index, { autoplay: true });
+        });
+        streamList.appendChild(btn);
+      });
+      updateActiveButton();
+    }
+
+    function updateActiveButton() {
+      document.querySelectorAll('.stream-btn').forEach((btn) => {
+        const active = currentIndex >= 0 && streams[currentIndex] && btn.dataset.id === streams[currentIndex].id;
+        btn.classList.toggle('active', active);
+      });
+    }
+
+    function attachVideoSource(url) {
+      destroyHls();
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+
+      const lowerUrl = String(url || '').toLowerCase();
+      if (lowerUrl.endsWith('.m3u8')) {
+        if (window.Hls && Hls.isSupported()) {
+          hlsInstance = new Hls();
+          hlsInstance.loadSource(url);
+          hlsInstance.attachMedia(player);
+        } else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+          player.src = url;
+        } else {
+          statusBox.textContent = 'Questo browser non supporta HLS per il link selezionato.';
+        }
+      } else {
+        player.src = url;
+      }
+    }
+
+    async function loadStream(index, options = {}) {
+      if (index < 0 || !streams[index]) return;
+      currentIndex = index;
+      const selected = streams[index];
+      attachVideoSource(selected.url);
+      currentTitle.textContent = `${selected.id} - ${selected.name}`;
+      currentUrl.textContent = selected.url;
+      updateActiveButton();
+
+      if (options.autoplay) {
+        const tryPlay = async () => {
+          try {
+            await player.play();
+          } catch (error) {
+            console.warn('Autoplay bloccato dal browser:', error);
+          }
+        };
+
+        const lowerUrl = String(selected.url || '').toLowerCase();
+        if (lowerUrl.endsWith('.m3u8') && window.Hls && Hls.isSupported() && hlsInstance) {
+          hlsInstance.once(Hls.Events.MANIFEST_PARSED, tryPlay);
+        } else {
+          await tryPlay();
+        }
+      }
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) readFile(file);
+    });
+
+    loadUrlBtn.addEventListener('click', async () => {
+      await readUrl(urlInput.value);
+    });
+
+    urlInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await readUrl(urlInput.value);
+      }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      filteredStreams = streams.filter(stream =>
+        stream.id.toLowerCase().includes(term) || stream.name.toLowerCase().includes(term)
+      );
+      renderMenu(filteredStreams);
+    });
+
+    openCurrent.addEventListener('click', () => {
+      if (currentIndex >= 0 && streams[currentIndex]) {
+        window.open(streams[currentIndex].url, '_blank', 'noopener,noreferrer');
+      }
+    });
+
+    resetPlayer.addEventListener('click', () => {
+      destroyHls();
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+      currentIndex = -1;
+      currentTitle.textContent = 'Player svuotato';
+      currentUrl.textContent = 'Nessun contenuto caricato';
+      updateActiveButton();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file) readFile(file);
+    });
+  </script>
+</body>
+</html>
